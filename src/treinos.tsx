@@ -184,63 +184,63 @@ const Treinos: React.FC = () => {
   if (error) return <div className="p-8 text-center text-red-500">Erro: {error}</div>;
 
   return (
-    <div className="bg-gray-50 min-h-screen font-sans">
-      <div className="container mx-auto p-4 md:p-8">
-        <header className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-800">Gerenciamento de Treinos</h1>
-          <p className="text-gray-600">Crie, edite e visualize os treinos dos alunos.</p>
+    <div className="app-container">
+      <div className="main-container">
+        <header className="app-header">
+          <h1 className="app-title">Gerenciamento de Treinos</h1>
+          <p className="app-subtitle">Crie, edite e visualize os treinos dos alunos.</p>
         </header>
 
         <main>
           {/* Formulário de Criação/Edição */}
-          <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-            <h2 className="text-2xl font-semibold mb-4 text-gray-700">
+          <div className="form-card">
+            <h2 className="form-title">
               {editingId ? 'Editar Treino' : 'Adicionar Novo Treino'}
             </h2>
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="md:col-span-2">
-                <label htmlFor="nome_treino" className="block text-sm font-medium text-gray-700 mb-1">Nome do Treino</label>
-                <input type="text" id="nome_treino" name="nome_treino" value={formData.nome_treino} onChange={handleInputChange} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
+            <form onSubmit={handleSubmit} className="workout-form">
+              <div className="form-group-full">
+                <label htmlFor="nome_treino" className="form-label">Nome do Treino</label>
+                <input type="text" id="nome_treino" name="nome_treino" value={formData.nome_treino} onChange={handleInputChange} required className="form-input" />
               </div>
               
-              <div className="md:col-span-2">
-                <label htmlFor="descricao" className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
-                <textarea id="descricao" name="descricao" value={formData.descricao} onChange={handleInputChange} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+              <div className="form-group-full">
+                <label htmlFor="descricao" className="form-label">Descrição</label>
+                <textarea id="descricao" name="descricao" value={formData.descricao} onChange={handleInputChange} rows={3} className="form-input"></textarea>
               </div>
 
-              <div>
-                <label htmlFor="aluno_id" className="block text-sm font-medium text-gray-700 mb-1">Aluno</label>
-                <select id="aluno_id" name="aluno_id" value={formData.aluno_id} onChange={handleInputChange} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+              <div className="form-group">
+                <label htmlFor="aluno_id" className="form-label">Aluno</label>
+                <select id="aluno_id" name="aluno_id" value={formData.aluno_id} onChange={handleInputChange} required className="form-input">
                   <option value="" disabled>Selecione um aluno</option>
                   {alunos.map(aluno => <option key={aluno.id} value={aluno.id}>{aluno.nome}</option>)}
                 </select>
               </div>
 
-              <div>
-                <label htmlFor="instrutor_id" className="block text-sm font-medium text-gray-700 mb-1">Instrutor</label>
-                <select id="instrutor_id" name="instrutor_id" value={formData.instrutor_id} onChange={handleInputChange} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+              <div className="form-group">
+                <label htmlFor="instrutor_id" className="form-label">Instrutor</label>
+                <select id="instrutor_id" name="instrutor_id" value={formData.instrutor_id} onChange={handleInputChange} required className="form-input">
                   <option value="" disabled>Selecione um instrutor</option>
                   {instrutores.map(instrutor => <option key={instrutor.id} value={instrutor.id}>{instrutor.nome}</option>)}
                 </select>
               </div>
 
-              <div>
-                <label htmlFor="data_inicio" className="block text-sm font-medium text-gray-700 mb-1">Data de Início</label>
-                <input type="date" id="data_inicio" name="data_inicio" value={formData.data_inicio} onChange={handleInputChange} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
+              <div className="form-group">
+                <label htmlFor="data_inicio" className="form-label">Data de Início</label>
+                <input type="date" id="data_inicio" name="data_inicio" value={formData.data_inicio} onChange={handleInputChange} required className="form-input" />
               </div>
 
-              <div>
-                <label htmlFor="data_fim" className="block text-sm font-medium text-gray-700 mb-1">Data de Fim (Opcional)</label>
-                <input type="date" id="data_fim" name="data_fim" value={formData.data_fim} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
+              <div className="form-group">
+                <label htmlFor="data_fim" className="form-label">Data de Fim (Opcional)</label>
+                <input type="date" id="data_fim" name="data_fim" value={formData.data_fim} onChange={handleInputChange} className="form-input" />
               </div>
 
-              <div className="md:col-span-2 flex items-center justify-end space-x-4">
+              <div className="form-actions">
                 {editingId && (
-                  <button type="button" onClick={handleCancel} className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors">
+                  <button type="button" onClick={handleCancel} className="btn btn-cancel">
                     Cancelar
                   </button>
                 )}
-                <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                <button type="submit" className="btn btn-submit">
                   {editingId ? 'Atualizar Treino' : 'Salvar Treino'}
                 </button>
               </div>
@@ -248,33 +248,33 @@ const Treinos: React.FC = () => {
           </div>
 
           {/* Tabela de Treinos */}
-          <div className="bg-white rounded-lg shadow-md overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="bg-gray-100">
+          <div className="table-card">
+            <table className="workout-table">
+              <thead className="table-header">
                 <tr>
-                  <th className="p-4 font-semibold text-gray-600">Treino</th>
-                  <th className="p-4 font-semibold text-gray-600">Aluno</th>
-                  <th className="p-4 font-semibold text-gray-600">Instrutor</th>
-                  <th className="p-4 font-semibold text-gray-600">Período</th>
-                  <th className="p-4 font-semibold text-gray-600">Ações</th>
+                  <th className="table-th">Treino</th>
+                  <th className="table-th">Aluno</th>
+                  <th className="table-th">Instrutor</th>
+                  <th className="table-th">Período</th>
+                  <th className="table-th">Ações</th>
                 </tr>
               </thead>
               <tbody>
                 {treinos.map(treino => (
-                  <tr key={treino.id} className="border-t border-gray-200 hover:bg-gray-50">
-                    <td className="p-4">
-                        <div className="font-medium text-gray-900">{treino.nome_treino}</div>
-                        <div className="text-sm text-gray-500 truncate" style={{maxWidth: '250px'}}>{treino.descricao}</div>
+                  <tr key={treino.id} className="table-row">
+                    <td className="table-td">
+                        <div className="workout-name">{treino.nome_treino}</div>
+                        <div className="workout-description" style={{maxWidth: '250px'}}>{treino.descricao}</div>
                     </td>
-                    <td className="p-4 text-gray-700">{treino.aluno_nome}</td>
-                    <td className="p-4 text-gray-700">{treino.instrutor_nome}</td>
-                    <td className="p-4 text-gray-700">
+                    <td className="table-td table-text">{treino.aluno_nome}</td>
+                    <td className="table-td table-text">{treino.instrutor_nome}</td>
+                    <td className="table-td table-text">
                         {formatDateForInput(treino.data_inicio)} a {formatDateForInput(treino.data_fim) || 'Atual'}
                     </td>
-                    <td className="p-4">
-                      <div className="flex space-x-2">
-                        <button onClick={() => handleEdit(treino)} className="text-indigo-600 hover:text-indigo-900 font-medium">Editar</button>
-                        <button onClick={() => handleDelete(treino.id)} className="text-red-600 hover:text-red-900 font-medium">Excluir</button>
+                    <td className="table-td">
+                      <div className="action-buttons">
+                        <button onClick={() => handleEdit(treino)} className="btn-edit">Editar</button>
+                        <button onClick={() => handleDelete(treino.id)} className="btn-delete">Excluir</button>
                       </div>
                     </td>
                   </tr>
@@ -282,7 +282,7 @@ const Treinos: React.FC = () => {
               </tbody>
             </table>
              {treinos.length === 0 && (
-                <div className="text-center p-8 text-gray-500">
+                <div className="empty-state">
                     Nenhum treino encontrado. Adicione um novo treino no formulário acima.
                 </div>
             )}
