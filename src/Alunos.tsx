@@ -1,106 +1,109 @@
-
-import  { useState, useEffect } from 'react';
-// Importando os componentes que criamos
+import { useState, useEffect } from 'react';
 import AlunosList from './AlunosList';
 import AlunosForm from './AlunosForm';
-// Importando a interface e os dados mockados
 import type { Aluno } from './types';
 
-// --- Dados Iniciais (Simulação de Banco de Dados) ---
-// Estes dados seriam carregados do seu back-end (Fastify + MySQL)
-
-
 function App() {
-  // Estado para armazenar a lista de alunos
   const [alunos, setAlunos] = useState<Aluno[]>([]);
-  // Estado para controlar a visibilidade do formulário
   const [isFormVisible, setIsFormVisible] = useState(false);
-  // Estado para guardar o aluno que está sendo editado
   const [alunoParaEditar, setAlunoParaEditar] = useState<Aluno | null>(null);
 
-  // Simula o carregamento inicial dos dados da API
-useEffect(() => {
-  const fetchAlunos = async () => {
-    try {
-      const response = await fetch('http://localhost:8000/api/alunos');
-      if (!response.ok) {
-        throw new Error('Erro ao carregar alunos');
+  useEffect(() => {
+    const fetchAlunos = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/alunos');
+        if (!response.ok) {
+          throw new Error('Erro ao carregar alunos');
+        }
+        const data = await response.json();
+        
+        const alunosFormatados = data.map((aluno: any) => ({
+          id_aluno: aluno.id_aluno,
+          nome_completo: aluno.nome,
+          data_nascimento: aluno.data_nascimento,
+          data_matricula: aluno.data_matricula,
+          sexo: aluno.sexo,
+          telefone: aluno.telefone,
+          email: aluno.email,
+          endereco: aluno.endereco,
+          status: aluno.status
+        }));
+        
+        setAlunos(alunosFormatados);
+      } catch (error) {
+        console.error('Erro:', error);
       }
-      const data = await response.json();
-      setAlunos(data);
+    };
+
+    fetchAlunos();
+  }, []);
+
+  const handleSaveAluno = async (alunoData: Aluno) => {
+    try {
+      let url = 'http://localhost:8000/api/alunos';
+      let method = 'POST';
+      
+      if (alunoData.id_aluno) {
+        url += `/${alunoData.id_aluno}`;
+        method = 'PUT';
+      }
+
+      const bodyData = {
+        nome: alunoData.nome_completo,
+        data_nascimento: alunoData.data_nascimento,
+        sexo: alunoData.sexo,
+        telefone: alunoData.telefone || null,
+        email: alunoData.email || null,
+        endereco: alunoData.endereco || null,
+        status: alunoData.status || 'ativo',
+        data_matricula: alunoData.data_matricula
+      };
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bodyData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao salvar aluno');
+      }
+
+      const result = await response.json();
+      
+      if (alunoData.id_aluno) {
+        setAlunos(alunos.map(a => 
+          a.id_aluno === alunoData.id_aluno ? result : a
+        ));
+      } else {
+        setAlunos([...alunos, result]);
+      }
+
+      closeForm();
     } catch (error) {
       console.error('Erro:', error);
-      // Você pode adicionar um estado de erro para mostrar ao usuário
     }
   };
 
-  fetchAlunos();
-}, []);
+  const handleDeleteAluno = async (id_aluno: number) => {
+    if (window.confirm('Tem certeza que deseja excluir este aluno?')) {
+      try {
+        const response = await fetch(`http://localhost:8000/api/alunos/${id_aluno}`, {
+          method: 'DELETE',
+        });
 
-  // --- Funções CRUD (Simuladas) ---
+        if (!response.ok) {
+          throw new Error('Erro ao excluir aluno');
+        }
 
-  const handleSaveAluno = async (alunoData: Omit<Aluno, 'id'> | Aluno) => {
-  try {
-    let response;
-    
-    if ('id' in alunoData) {
-      // Atualização
-      response = await fetch(`http://localhost:8000/api/alunos`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-       
-      });
-    } else {
-      // Criação
-      response = await fetch('http://localhost:8000/api/alunos', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        
-      });
-    }
-
-    if (!response.ok) {
-      throw new Error('Erro ao salvar aluno');
-    }
-
-    const alunoAtualizado = await response.json();
-    
-    if ('id' in alunoData) {
-      setAlunos(alunos.map(a => a.id === alunoData.id ? alunoAtualizado : a));
-    } else {
-      setAlunos([...alunos, alunoAtualizado]);
-    }
-
-    closeForm();
-  } catch (error) {
-    console.error('Erro:', error);
-    // Mostrar mensagem de erro para o usuário
-  }
-};
-const handleDeleteAluno = async (id: number) => {
-  if (window.confirm('Tem certeza que deseja excluir este aluno?')) {
-    try {
-      const response = await fetch(`http://localhost:8000/api/alunos/:id`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro ao excluir aluno');
+        setAlunos(alunos.filter(a => a.id_aluno !== id_aluno));
+      } catch (error) {
+        console.error('Erro:', error);
       }
-
-      setAlunos(alunos.filter(a => a.id !== id));
-    } catch (error) {
-      console.error('Erro:', error);
-      // Mostrar mensagem de erro para o usuário
     }
-  }
-};
-
-  // --- Funções de Controle da UI ---
+  };
 
   const closeForm = () => {
     setIsFormVisible(false);
@@ -108,7 +111,7 @@ const handleDeleteAluno = async (id: number) => {
   };
 
   const handleAddNew = () => {
-    setAlunoParaEditar(null); // Garante que o formulário estará vazio
+    setAlunoParaEditar(null);
     setIsFormVisible(true);
   };
 
@@ -148,4 +151,4 @@ const handleDeleteAluno = async (id: number) => {
   );
 }
 
-export default App
+export default App;

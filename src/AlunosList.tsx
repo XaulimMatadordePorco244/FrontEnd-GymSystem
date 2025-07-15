@@ -1,9 +1,6 @@
-// src/components/StudentsList.tsx
-
 import type { FC } from 'react';
 import type { Aluno } from './types';
 
-// Propriedades que o componente StudentsList espera receber.
 interface StudentsListProps {
   alunos: Aluno[];
   onEdit: (aluno: Aluno) => void;
@@ -11,7 +8,6 @@ interface StudentsListProps {
   onAddNew: () => void;
 }
 
-// Adicionado valor padrão `[]` para a prop `alunos` para evitar erros de renderização.
 const StudentsList: FC<StudentsListProps> = ({ alunos = [], onEdit, onDelete, onAddNew }) => {
   return (
     <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-5xl mx-auto">
@@ -37,7 +33,7 @@ const StudentsList: FC<StudentsListProps> = ({ alunos = [], onEdit, onDelete, on
           <tbody className="bg-white divide-y divide-gray-200">
             {alunos.length > 0 ? (
               alunos.map(aluno => (
-                <tr key={aluno.id} className="hover:bg-gray-50">
+                <tr key={aluno.id_aluno} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{aluno.nome_completo}</div>
                     <div className="text-sm text-gray-500">{aluno.telefone}</div>
@@ -52,7 +48,7 @@ const StudentsList: FC<StudentsListProps> = ({ alunos = [], onEdit, onDelete, on
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button onClick={() => onEdit(aluno)} className="text-indigo-600 hover:text-indigo-900 mr-4">Editar</button>
-                    <button onClick={() => onDelete(aluno.id)} className="text-red-600 hover:text-red-900">Excluir</button>
+                    <button onClick={() => aluno.id_aluno && onDelete(aluno.id_aluno)} className="text-red-600 hover:text-red-900">Excluir</button>
                   </td>
                 </tr>
               ))
