@@ -1,32 +1,36 @@
-import React, { useState, useEffect, type FC, type FormEvent } from 'react';
-import type { Aluno } from './types';
+import React, { useState, useEffect } from 'react';
+import type { Aluno, AlunosFormProps } from './types';
 
-interface StudentsFormProps {
-  alunoParaEditar: Aluno | null;
-  onSave: (aluno: Aluno) => void;
-  onCancel: () => void;
-}
-
-const AlunosForm: FC<StudentsFormProps> = ({ alunoParaEditar, onSave, onCancel }) => {
+const AlunosForm = ({ 
+  alunoParaEditar, 
+  onSave, 
+  onCancel,
+  isLoading = false 
+}: AlunosFormProps) => {
   const initialState: Aluno = {
+    id_aluno: 0,
     nome_completo: '',
-    data_nascimento: '',
-    email: '',
-    telefone: null,
-    data_matricula: '',
-    status: 'ativo',
+    data_nascimento: new Date().toISOString().split('T')[0],
     sexo: 'M',
-    endereco: null,
-    id_aluno: 0
+    telefone: '',
+    email: '',
+    endereco: '',
+    data_matricula: new Date().toISOString().split('T')[0],
+    status: 'ativo'
   };
 
   const [aluno, setAluno] = useState<Aluno>(initialState);
 
   useEffect(() => {
     if (alunoParaEditar) {
-      setAluno(alunoParaEditar);
+        // Ensure date is in 'YYYY-MM-DD' format for the input
+        const formattedAluno = {
+            ...alunoParaEditar,
+            data_nascimento: alunoParaEditar.data_nascimento.split('T')[0],
+        };
+        setAluno(formattedAluno);
     } else {
-      setAluno(initialState);
+        setAluno(initialState);
     }
   }, [alunoParaEditar]);
 
@@ -34,134 +38,155 @@ const AlunosForm: FC<StudentsFormProps> = ({ alunoParaEditar, onSave, onCancel }
     const { name, value } = e.target;
     setAluno(prev => ({ 
       ...prev, 
-      [name]: name === 'telefone' || name === 'endereco' ? (value === '' ? null : value) : value
+      [name]: name === 'telefone' || name === 'email' || name === 'endereco' 
+        ? (value === '' ? null : value) 
+        : value
     }));
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(aluno);
+    await onSave(aluno);
   };
 
   return (
-    <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">
-        {alunoParaEditar ? 'Editar Aluno' : 'Cadastrar Novo Aluno'}
+    <div className="gym-card">
+      <h2 className="mb-6" style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1f2937' }}>
+        {alunoParaEditar && alunoParaEditar.id_aluno ? 'Editar Aluno' : 'Cadastrar Novo Aluno'}
       </h2>
+      
       <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="md:col-span-2">
-            <label htmlFor="nome_completo" className="block text-sm font-medium text-gray-700 mb-1">Nome Completo</label>
-            <input 
-              type="text" 
-              name="nome_completo" 
-              id="nome_completo" 
-              value={aluno.nome_completo} 
-              onChange={handleChange} 
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" 
-              required 
-            />
-          </div>
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input 
-              type="email" 
-              name="email" 
-              id="email" 
-              value={aluno.email || ''} 
-              onChange={handleChange} 
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" 
-              required 
-            />
-          </div>
-          <div>
-            <label htmlFor="telefone" className="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
-            <input 
-              type="tel" 
-              name="telefone" 
-              id="telefone" 
-              value={aluno.telefone || ''} 
-              onChange={handleChange} 
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" 
-            />
-          </div>
-          <div>
-            <label htmlFor="data_nascimento" className="block text-sm font-medium text-gray-700 mb-1">Data de Nascimento</label>
-            <input 
-              type="date" 
-              name="data_nascimento" 
-              id="data_nascimento" 
-              value={aluno.data_nascimento} 
-              onChange={handleChange} 
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" 
-              required 
-            />
-          </div>
-          <div>
-            <label htmlFor="data_matricula" className="block text-sm font-medium text-gray-700 mb-1">Data de Matrícula</label>
-            <input 
-              type="date" 
-              name="data_matricula" 
-              id="data_matricula" 
-              value={aluno.data_matricula} 
-              onChange={handleChange} 
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" 
-              required 
-            />
-          </div>
-          <div>
-            <label htmlFor="sexo" className="block text-sm font-medium text-gray-700 mb-1">Sexo</label>
+        {/* Nome Completo (Obrigatório) */}
+        <div className="gym-form-group">
+          <label htmlFor="nome_completo" className="gym-form-label">
+            Nome Completo *
+          </label>
+          <input
+            type="text"
+            name="nome_completo"
+            id="nome_completo"
+            value={aluno.nome_completo}
+            onChange={handleChange}
+            className="gym-form-control"
+            required
+          />
+        </div>
+        
+        {/* Data de Nascimento (Obrigatório) */}
+        <div className="gym-form-group">
+          <label htmlFor="data_nascimento" className="gym-form-label">
+            Data de Nascimento *
+          </label>
+          <input
+            type="date"
+            name="data_nascimento"
+            id="data_nascimento"
+            value={aluno.data_nascimento}
+            onChange={handleChange}
+            className="gym-form-control"
+            required
+          />
+        </div>
+        
+        {/* Sexo (Obrigatório) */}
+        <div className="gym-form-group">
+          <label htmlFor="sexo" className="gym-form-label">
+            Sexo *
+          </label>
+          <select
+            name="sexo"
+            id="sexo"
+            value={aluno.sexo}
+            onChange={handleChange}
+            className="gym-form-control"
+            required
+          >
+            <option value="M">Masculino</option>
+            <option value="F">Feminino</option>
+            <option value="O">Outro</option>
+          </select>
+        </div>
+        
+        {/* Telefone (Opcional) */}
+        <div className="gym-form-group">
+          <label htmlFor="telefone" className="gym-form-label">Telefone</label>
+          <input
+            type="tel"
+            name="telefone"
+            id="telefone"
+            value={aluno.telefone || ''}
+            onChange={handleChange}
+            className="gym-form-control"
+          />
+        </div>
+        
+        {/* Email (Opcional) */}
+        <div className="gym-form-group">
+          <label htmlFor="email" className="gym-form-label">Email</label>
+          <input
+            type="email"
+            name="email"
+            id="email"
+            value={aluno.email || ''}
+            onChange={handleChange}
+            className="gym-form-control"
+          />
+        </div>
+        
+        {/* Endereço (Opcional) */}
+        <div className="gym-form-group">
+          <label htmlFor="endereco" className="gym-form-label">Endereço</label>
+          <input
+            type="text"
+            name="endereco"
+            id="endereco"
+            value={aluno.endereco || ''}
+            onChange={handleChange}
+            className="gym-form-control"
+          />
+        </div>
+        
+        {/* Status (Apenas para edição) */}
+        {alunoParaEditar && alunoParaEditar.id_aluno > 0 && (
+          <div className="gym-form-group">
+            <label htmlFor="status" className="gym-form-label">Status</label>
             <select
-              name="sexo"
-              id="sexo"
-              value={aluno.sexo}
+              name="status"
+              id="status"
+              value={aluno.status}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-              required
-            >
-              <option value="M">Masculino</option>
-              <option value="F">Feminino</option>
-              <option value="O">Outro</option>
-            </select>
-          </div>
-          <div className="md:col-span-2">
-            <label htmlFor="endereco" className="block text-sm font-medium text-gray-700 mb-1">Endereço</label>
-            <input
-              type="text"
-              name="endereco"
-              id="endereco"
-              value={aluno.endereco || ''}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
-          <div className="md:col-span-2">
-            <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <select 
-              name="status" 
-              id="status" 
-              value={aluno.status} 
-              onChange={handleChange} 
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+              className="gym-form-control"
             >
               <option value="ativo">Ativo</option>
               <option value="inativo">Inativo</option>
             </select>
           </div>
-        </div>
-        <div className="mt-8 flex justify-end gap-4">
-          <button 
-            type="button" 
-            onClick={onCancel} 
-            className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-100 transition-colors"
+        )}
+
+        {/* Botões de Ação */}
+        <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end' }} className="gap-4">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={isLoading}
+            className="gym-btn gym-btn-secondary"
           >
             Cancelar
           </button>
-          <button 
-            type="submit" 
-            className="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="gym-btn gym-btn-primary"
           >
-            Salvar
+            {isLoading ? (
+              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Salvando...
+              </span>
+            ) : 'Salvar'}
           </button>
         </div>
       </form>

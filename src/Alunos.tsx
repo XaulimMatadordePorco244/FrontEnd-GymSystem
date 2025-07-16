@@ -2,36 +2,52 @@ import { useState, useEffect } from 'react';
 import AlunosList from './AlunosList';
 import AlunosForm from './AlunosForm';
 import type { Aluno } from './types';
+import './Alunos.css'; // Import the new CSS file here
 
-function App() {
+function Alunos() {
   const [alunos, setAlunos] = useState<Aluno[]>([]);
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [alunoParaEditar, setAlunoParaEditar] = useState<Aluno | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchAlunos = async () => {
+      setIsLoading(true);
+      setError(null);
       try {
         const response = await fetch('http://localhost:8000/api/alunos');
-        if (!response.ok) {
-          throw new Error('Erro ao carregar alunos');
-        }
-        const data = await response.json();
         
-        const alunosFormatados = data.map((aluno: any) => ({
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.error || `Erro ${response.status}: ${response.statusText}`
+          );
+        }
+        
+        const data = await response.json();
+        setAlunos(data.map((aluno: any) => ({
           id_aluno: aluno.id_aluno,
           nome_completo: aluno.nome,
           data_nascimento: aluno.data_nascimento,
-          data_matricula: aluno.data_matricula,
           sexo: aluno.sexo,
           telefone: aluno.telefone,
           email: aluno.email,
           endereco: aluno.endereco,
+          data_matricula: aluno.data_cadastro,
           status: aluno.status
-        }));
+        })));
+      } catch (error: unknown) {
+        console.error('Erro ao carregar alunos:', error);
         
-        setAlunos(alunosFormatados);
-      } catch (error) {
-        console.error('Erro:', error);
+        let errorMessage = 'Não foi possível carregar os alunos';
+        if (error instanceof Error) {
+          errorMessage = error.message;
+        }
+        
+        setError(errorMessage);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -39,14 +55,18 @@ function App() {
   }, []);
 
   const handleSaveAluno = async (alunoData: Aluno) => {
+    setIsLoading(true);
+    setError(null);
     try {
-      let url = 'http://localhost:8000/api/alunos';
-      let method = 'POST';
-      
-      if (alunoData.id_aluno) {
-        url += `/${alunoData.id_aluno}`;
-        method = 'PUT';
+      if (!alunoData.nome_completo || !alunoData.data_nascimento || !alunoData.sexo) {
+        throw new Error('Nome, data de nascimento e sexo são obrigatórios');
       }
+
+      const url = alunoData.id_aluno 
+        ? `http://localhost:8000/api/alunos/${alunoData.id_aluno}`
+        : 'http://localhost:8000/api/alunos';
+      
+      const method = alunoData.id_aluno ? 'PUT' : 'POST';
 
       const bodyData = {
         nome: alunoData.nome_completo,
@@ -55,53 +75,84 @@ function App() {
         telefone: alunoData.telefone || null,
         email: alunoData.email || null,
         endereco: alunoData.endereco || null,
-        status: alunoData.status || 'ativo',
-        data_matricula: alunoData.data_matricula
+        status: alunoData.status || 'ativo'
       };
 
       const response = await fetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bodyData)
       });
 
+      const responseData = await response.json();
+      
       if (!response.ok) {
-        throw new Error('Erro ao salvar aluno');
+        throw new Error(responseData.error || responseData.message || 'Erro ao salvar aluno');
       }
 
-      const result = await response.json();
-      
-      if (alunoData.id_aluno) {
-        setAlunos(alunos.map(a => 
-          a.id_aluno === alunoData.id_aluno ? result : a
-        ));
-      } else {
-        setAlunos([...alunos, result]);
-      }
+      setAlunos(prev => {
+        if (alunoData.id_aluno) {
+          return prev.map(a => a.id_aluno === alunoData.id_aluno ? {
+            ...alunoData,
+            data_matricula: responseData.data_cadastro || alunoData.data_matricula
+          } : a);
+        } else {
+          return [...prev, {
+            ...alunoData,
+            id_aluno: responseData.id_aluno,
+            data_matricula: responseData.data_cadastro
+          }];
+        }
+      });
 
       closeForm();
-    } catch (error) {
-      console.error('Erro:', error);
+    } catch (error: unknown) {
+      console.error('Erro ao salvar aluno:', error);
+      
+      let errorMessage = 'Erro ao salvar aluno';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleDeleteAluno = async (id_aluno: number) => {
-    if (window.confirm('Tem certeza que deseja excluir este aluno?')) {
-      try {
-        const response = await fetch(`http://localhost:8000/api/alunos/${id_aluno}`, {
-          method: 'DELETE',
-        });
+    if (!window.confirm('Tem certeza que deseja inativar este aluno?')) {
+      return;
+    }
 
-        if (!response.ok) {
-          throw new Error('Erro ao excluir aluno');
-        }
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`http://localhost:8000/api/alunos/${id_aluno}`, {
+        method: 'DELETE',
+      });
 
-        setAlunos(alunos.filter(a => a.id_aluno !== id_aluno));
-      } catch (error) {
-        console.error('Erro:', error);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Erro ${response.status}`);
       }
+
+      setAlunos(prevAlunos => 
+        prevAlunos.map(a => 
+          a.id_aluno === id_aluno ? { ...a, status: 'inativo' } : a
+        )
+      );
+    } catch (error: unknown) {
+      console.error('Erro ao inativar aluno:', error);
+      
+      let errorMessage = 'Erro ao inativar aluno';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -111,7 +162,17 @@ function App() {
   };
 
   const handleAddNew = () => {
-    setAlunoParaEditar(null);
+    setAlunoParaEditar({
+      id_aluno: 0,
+      nome_completo: '',
+      data_nascimento: new Date().toISOString().split('T')[0],
+      sexo: 'M',
+      telefone: '',
+      email: '',
+      endereco: '',
+      status: 'ativo',
+      data_matricula: new Date().toISOString().split('T')[0]
+    });
     setIsFormVisible(true);
   };
 
@@ -121,21 +182,28 @@ function App() {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen w-full py-12 px-4 sm:px-6 lg:px-8">
-      <div className="container mx-auto">
-        <header className="text-center mb-12">
-            <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">
-                Sistema da <span className="text-indigo-600">Academia</span>
-            </h1>
-            <p className="mt-2 text-lg text-gray-600">Gerenciamento de Alunos</p>
+    <div className="gym-container">
+      <div className="gym-content">
+        <header className="gym-header">
+          <h1 className="gym-title">
+            Sistema da <span style={{ color: '#4f46e5' }}>Academia</span>
+          </h1>
+          <p className="gym-subtitle">Gerenciamento de Alunos</p>
         </header>
         
+        {error && (
+          <div className="gym-card" style={{ backgroundColor: '#fee2e2', color: '#991b1b', border: '1px solid #fca5a5', marginBottom: '1.5rem' }}>
+            <strong>Erro:</strong> {error}
+          </div>
+        )}
+
         <main>
           {isFormVisible ? (
             <AlunosForm 
               alunoParaEditar={alunoParaEditar}
               onSave={handleSaveAluno}
               onCancel={closeForm}
+              isLoading={isLoading}
             />
           ) : (
             <AlunosList
@@ -143,6 +211,7 @@ function App() {
               onEdit={handleEdit}
               onDelete={handleDeleteAluno}
               onAddNew={handleAddNew}
+              isLoading={isLoading}
             />
           )}
         </main>
@@ -151,4 +220,4 @@ function App() {
   );
 }
 
-export default App;
+export default Alunos;

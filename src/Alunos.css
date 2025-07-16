@@ -1,0 +1,209 @@
+/* ===== RESET & BASE STYLES ===== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.5;
+  color: #1f2937;
+}
+
+/* ===== LAYOUT CONTAINERS ===== */
+.gym-container {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f9fafb;
+  padding: 2rem;
+}
+
+.gym-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ===== HEADER STYLES ===== */
+.gym-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.gym-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+
+.gym-subtitle {
+  font-size: 1.125rem;
+  color: #6b7280;
+}
+
+/* ===== CARD STYLES ===== */
+.gym-card {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 
+              0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+/* ===== TABLE STYLES ===== */
+.gym-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.gym-table thead tr {
+  background-color: #f3f4f6;
+}
+
+.gym-table th {
+  padding: 1rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.gym-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.gym-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* ===== STATUS BADGES ===== */
+.gym-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-active {
+  background-color: #ecfdf5;
+  color: #065f46;
+}
+
+.badge-inactive {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* ===== BUTTON STYLES ===== */
+.gym-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.gym-btn-primary {
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+}
+
+.gym-btn-primary:hover {
+  background-color: #4338ca;
+}
+
+.gym-btn-secondary {
+  background-color: white;
+  color: #4f46e5;
+  border: 1px solid #d1d5db;
+}
+
+.gym-btn-secondary:hover {
+  background-color: #f9fafb;
+}
+
+.gym-btn-icon {
+  margin-right: 0.5rem;
+}
+
+/* ===== FORM STYLES ===== */
+.gym-form-group {
+  margin-bottom: 1.5rem;
+}
+
+.gym-form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.gym-form-control {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.gym-form-control:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+/* ===== UTILITY CLASSES ===== */
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.gap-4 {
+  gap: 1rem;
+}
+
+.mb-6 {
+  margin-bottom: 1.5rem;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* ===== RESPONSIVE ADJUSTMENTS ===== */
+@media (max-width: 768px) {
+  .gym-table thead {
+    display: none;
+  }
+  
+  .gym-table tr {
+    display: block;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .gym-table td {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem;
+  }
+  
+  .gym-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    margin-right: 1rem;
+  }
+}

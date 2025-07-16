@@ -1,198 +1,214 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
 import './treinos.css'
 
 // Tipos de dados
 interface Aluno {
-  id: number
+  id_aluno: number
   nome: string
 }
 
 interface Instrutor {
-  id: number
+  id_instrutor: number
   nome: string
 }
 
 interface Treino {
-  id: number
-  nome: string
-  descricao: string
-  aluno: string
-  instrutor: string
-  data: string
+  id_treino: number
+  nome_treino: string
+  data_inicio: string
+  data_fim: string | null
+  id_aluno: number
+  aluno_nome: string
+  id_instrutor: number
+  instrutor_nome: string
 }
 
-// Dados de exemplo
-const alunosExemplo: Aluno[] = [
-  { id: 1, nome: 'João' },
-  { id: 2, nome: 'Maria' },
-  { id: 3, nome: 'Carlos' }
-]
-
-const instrutoresExemplo: Instrutor[] = [
-  { id: 1, nome: 'Prof. Silva' },
-  { id: 2, nome: 'Prof. Souza' }
-]
-
-const treinosExemplo: Treino[] = [
-  {
-    id: 1,
-    nome: 'Treino Inicial',
-    descricao: 'Exercícios básicos',
-    aluno: 'João',
-    instrutor: 'Prof. Silva',
-    data: '01/01/2023'
-  }
-]
-
 const Treinos = () => {
-  // Estados
-  const [treinos, setTreinos] = useState<Treino[]>(treinosExemplo)
+  const [treinos, setTreinos] = useState<Treino[]>([])
+  const [alunos, setAlunos] = useState<Aluno[]>([])
+  const [instrutores, setInstrutores] = useState<Instrutor[]>([])
   const [form, setForm] = useState({
-    nome: '',
-    descricao: '',
-    aluno: '',
-    instrutor: '',
-    data: ''
+    nome_treino: '',
+    id_aluno: '',
+    id_instrutor: '',
+    data_inicio: '',
+    data_fim: ''
   })
   const [editando, setEditando] = useState<number | null>(null)
+  const [carregando, setCarregando] = useState(true)
 
-  // Funções
+  const API_URL = 'http://localhost:8000/api'
+
+  useEffect(() => {
+    const buscarDados = async () => {
+      try {
+        const [resTreinos, resAlunos, resInstrutores] = await Promise.all([
+          axios.get(`${API_URL}/treinos`),
+          axios.get(`${API_URL}/alunos`),
+          axios.get(`${API_URL}/instrutores`)
+        ])
+
+        setTreinos(resTreinos.data)
+        setAlunos(resAlunos.data)
+        setInstrutores(resInstrutores.data)
+      } catch (erro) {
+        console.error('Erro ao buscar dados:', erro)
+      } finally {
+        setCarregando(false)
+      }
+    }
+
+    buscarDados()
+  }, [])
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setForm({ ...form, [name]: value })
   }
 
-  const salvarTreino = (e: React.FormEvent) => {
+  const salvarTreino = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    const novoTreino: Treino = {
-      id: editando || treinos.length + 1,
-      nome: form.nome,
-      descricao: form.descricao,
-      aluno: alunosExemplo.find(a => a.id === Number(form.aluno))?.nome || '',
-      instrutor: instrutoresExemplo.find(i => i.id === Number(form.instrutor))?.nome || '',
-      data: form.data
-    }
 
-    if (editando) {
-      setTreinos(treinos.map(t => t.id === editando ? novoTreino : t))
-    } else {
-      setTreinos([...treinos, novoTreino])
-    }
+    try {
+      if (editando) {
+        await axios.put(`${API_URL}/treinos/${editando}`, form)
+      } else {
+        await axios.post(`${API_URL}/treinos`, form)
+      }
 
-    setForm({ nome: '', descricao: '', aluno: '', instrutor: '', data: '' })
-    setEditando(null)
+      const res = await axios.get(`${API_URL}/treinos`)
+      setTreinos(res.data)
+
+      setForm({
+        nome_treino: '',
+        id_aluno: '',
+        id_instrutor: '',
+        data_inicio: '',
+        data_fim: ''
+      })
+      setEditando(null)
+    } catch (erro) {
+      console.error('Erro ao salvar treino:', erro)
+    }
   }
 
   const editarTreino = (id: number) => {
-    const treino = treinos.find(t => t.id === id)
+    const treino = treinos.find(t => t.id_treino === id)
     if (treino) {
       setForm({
-        nome: treino.nome,
-        descricao: treino.descricao,
-        aluno: alunosExemplo.find(a => a.nome === treino.aluno)?.id.toString() || '',
-        instrutor: instrutoresExemplo.find(i => i.nome === treino.instrutor)?.id.toString() || '',
-        data: treino.data
+        nome_treino: treino.nome_treino,
+        id_aluno: String(treino.id_aluno),
+        id_instrutor: String(treino.id_instrutor),
+        data_inicio: treino.data_inicio,
+        data_fim: treino.data_fim || ''
       })
       setEditando(id)
     }
   }
 
-  const excluirTreino = (id: number) => {
-    if (window.confirm('Tem certeza?')) {
-      setTreinos(treinos.filter(t => t.id !== id))
+  const excluirTreino = async (id: number) => {
+    if (window.confirm('Tem certeza que deseja excluir este treino?')) {
+      try {
+        await axios.delete(`${API_URL}/treinos/${id}`)
+        setTreinos(treinos.filter(t => t.id_treino !== id))
+      } catch (erro) {
+        console.error('Erro ao excluir treino:', erro)
+      }
     }
+  }
+
+  if (carregando) {
+    return <div className="carregando">Carregando...</div>
   }
 
   return (
     <div className="container">
       <h1>Gerenciador de Treinos</h1>
-      
-      {/* Formulário */}
+
       <form onSubmit={salvarTreino} className="form">
         <h2>{editando ? 'Editar' : 'Adicionar'} Treino</h2>
-        
+
         <input
           type="text"
-          name="nome"
-          value={form.nome}
+          name="nome_treino"
+          value={form.nome_treino}
           onChange={handleChange}
           placeholder="Nome do treino"
           required
         />
-        
-        <input
-          type="text"
-          name="descricao"
-          value={form.descricao}
-          onChange={handleChange}
-          placeholder="Descrição"
-        />
-        
+
         <select
-          name="aluno"
-          value={form.aluno}
+          name="id_aluno"
+          value={form.id_aluno}
           onChange={handleChange}
           required
         >
           <option value="">Selecione o aluno</option>
-          {alunosExemplo.map(a => (
-            <option key={a.id} value={a.id}>{a.nome}</option>
+          {alunos.map(a => (
+            <option key={a.id_aluno} value={a.id_aluno}>{a.nome}</option>
           ))}
         </select>
-        
+
         <select
-          name="instrutor"
-          value={form.instrutor}
+          name="id_instrutor"
+          value={form.id_instrutor}
           onChange={handleChange}
           required
         >
           <option value="">Selecione o instrutor</option>
-          {instrutoresExemplo.map(i => (
-            <option key={i.id} value={i.id}>{i.nome}</option>
+          {instrutores.map(i => (
+            <option key={i.id_instrutor} value={i.id_instrutor}>{i.nome}</option>
           ))}
         </select>
-        
+
         <input
           type="date"
-          name="data"
-          value={form.data}
+          name="data_inicio"
+          value={form.data_inicio}
           onChange={handleChange}
           required
         />
-        
+
+        <input
+          type="date"
+          name="data_fim"
+          value={form.data_fim}
+          onChange={handleChange}
+          placeholder="Data de término (opcional)"
+        />
+
         <button type="submit">
           {editando ? 'Atualizar' : 'Salvar'}
         </button>
-        
+
         {editando && (
           <button type="button" onClick={() => setEditando(null)}>
             Cancelar
           </button>
         )}
       </form>
-      
-      {/* Lista de treinos */}
+
       <div className="lista">
         <h2>Treinos Cadastrados</h2>
-        
+
         {treinos.length === 0 ? (
           <p>Nenhum treino cadastrado</p>
         ) : (
           <ul>
             {treinos.map(t => (
-              <li key={t.id}>
-                <h3>{t.nome}</h3>
-                <p>{t.descricao}</p>
-                <p>Aluno: {t.aluno}</p>
-                <p>Instrutor: {t.instrutor}</p>
-                <p>Data: {t.data}</p>
-                
-                <button onClick={() => editarTreino(t.id)}>
+              <li key={t.id_treino}>
+                <h3>{t.nome_treino}</h3>
+                <p>Aluno: {t.aluno_nome}</p>
+                <p>Instrutor: {t.instrutor_nome}</p>
+                <p>Início: {new Date(t.data_inicio).toLocaleDateString()}</p>
+                {t.data_fim && <p>Término: {new Date(t.data_fim).toLocaleDateString()}</p>}
+
+                <button onClick={() => editarTreino(t.id_treino)}>
                   Editar
                 </button>
-                
-                <button onClick={() => excluirTreino(t.id)}>
+
+                <button onClick={() => excluirTreino(t.id_treino)}>
                   Excluir
                 </button>
               </li>

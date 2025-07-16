@@ -225,7 +225,7 @@ const PagamentoForm: React.FC<PagamentoFormProps> = ({ alunos, onSubmit, onCance
 
 
 // --- COMPONENTE PRINCIPAL --- //
-const App: React.FC = () => {
+const Pagamentos: React.FC = () => {
     const [pagamentos, setPagamentos] = useState<Pagamento[]>([]);
     const [alunos, setAlunos] = useState<Aluno[]>([]);
     const [pagamentoEmEdicao, setPagamentoEmEdicao] = useState<Pagamento | null>(null);
@@ -370,4 +370,4 @@ const App: React.FC = () => {
     );
 };
 
-export default App;
+export default Pagamentos;
