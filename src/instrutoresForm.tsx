@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import './instrutores.css'
 
 type Instrutor = {
   id?: number
@@ -38,8 +39,8 @@ function FormularioInstrutores({ instrutorEditando, aoSalvar, limparEdicao }: Pr
     try {
       const resposta = await fetch(
         instrutorEditando
-          ? `http://localhost:3000/instrutores/${instrutorEditando.id}`
-          : 'http://localhost:3000/instrutores',
+          ? `http://localhost:8000/api/instrutores/${instrutorEditando.id}`
+          : 'http://localhost:8000/api/instrutores',
         {
           method: instrutorEditando ? 'PUT' : 'POST',
           headers: { 'Content-Type': 'application/json' },

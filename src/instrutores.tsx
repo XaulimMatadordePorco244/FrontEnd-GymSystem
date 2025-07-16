@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import FormularioInstrutores from './instrutoresForm'
 import ListaInstrutores from './instrutoresList'
+import './instrutores.css'
 
 type Instrutor = {
   id: number

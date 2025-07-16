@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import './instrutores.css'
 
 type Instrutor = {
   id: number
@@ -22,7 +23,7 @@ function ListaInstrutores({ aoSelecionarInstrutor, atualizarLista, aoAtualizar }
 
   const buscarInstrutores = async () => {
     try {
-      const resposta = await fetch('http://localhost:3000/instrutores')
+      const resposta = await fetch('http://localhost:8000/api/instrutores')
       const dados = await resposta.json()
       setInstrutores(dados)
       setTodos(dados)
@@ -38,7 +39,7 @@ function ListaInstrutores({ aoSelecionarInstrutor, atualizarLista, aoAtualizar }
 
   const deletarInstrutor = async (id: number) => {
     try {
-      const resposta = await fetch(`http://localhost:3000/instrutores/${id}`, {
+      const resposta = await fetch(`http://localhost:8000/api/instrutores/${id}`, {
         method: 'DELETE'
       })
 
